@@ -21,11 +21,11 @@ VERMELHO = (255, 0, 0)
 AZUL = (0, 0, 255)
 
 # Configuração do quadrado
-largura_quadrado = 50
-altura_quadrado = 50
+largura_quadrado = 25
+altura_quadrado = 25
 x_quadrado = largura_tela // 2 - largura_quadrado // 2
 y_quadrado = altura_tela // 2 - altura_quadrado // 2
-velocidade = 5
+velocidade = 4
 
 # Direção inicial
 direcao_x = velocidade
@@ -36,8 +36,8 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Configuração das bolinhas
-raio_bolinha = 10
-num_bolinhas = 10
+raio_bolinha = 7
+num_bolinhas = 30
 bolinhas = []
 
 # Função para criar bolinhas aleatórias na tela
