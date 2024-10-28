@@ -46,21 +46,21 @@ def jogo():
         global x_quadrado, y_quadrado
         
         # Movimento do quadrado
-        if teclas[pygame.K_a]:
+        if teclas[pygame.K_a] and x_quadrado > 0:
             x_quadrado -= velocidade
-        if teclas[pygame.K_d]:
+        if teclas[pygame.K_d] and x_quadrado < largura_tela - largura_quadrado:
             x_quadrado += velocidade
-        if teclas[pygame.K_w]:
+        if teclas[pygame.K_w] and y_quadrado > 0:
             y_quadrado -= velocidade
-        if teclas[pygame.K_s]:
+        if teclas[pygame.K_s] and y_quadrado < altura_tela - altura_quadrado:
             y_quadrado += velocidade
-        if teclas[pygame.K_LEFT]:
+        if teclas[pygame.K_LEFT] and x_quadrado > 0:
             x_quadrado -= velocidade
-        if teclas[pygame.K_RIGHT]:
+        if teclas[pygame.K_RIGHT] and x_quadrado < largura_tela - largura_quadrado:
             x_quadrado += velocidade
-        if teclas[pygame.K_UP]:
+        if teclas[pygame.K_UP] and y_quadrado > 0:
             y_quadrado -= velocidade
-        if teclas[pygame.K_DOWN]:
+        if teclas[pygame.K_DOWN] and y_quadrado < altura_tela - altura_quadrado:
             y_quadrado += velocidade
 
         # Limpa a tela
