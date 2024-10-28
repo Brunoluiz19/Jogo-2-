@@ -1,10 +1,6 @@
-# importações 
 import pygame
 import random
 import sys
-import time
-import math
-import os
 
 # Inicializa o Pygame
 pygame.init()
@@ -13,14 +9,17 @@ pygame.init()
 largura_tela = 1000
 altura_tela = 805
 tela = pygame.display.set_mode((largura_tela, altura_tela))
-pygame.display.set_caption("Quadrado Móvel com Bolinhas")
+pygame.display.set_caption("Quadrado Móvel com Bolinhas e Inimigos")
 
 # Cores
 BRANCO = (255, 255, 255)
 VERMELHO = (255, 0, 0)
 AZUL = (0, 0, 255)
+VERDE = (0, 255, 0)
+AMARELO = (255, 255, 0)
+ROSA = (255, 0, 255)
 
-# Configuração do quadrado
+# Configuração do quadrado vermelho
 largura_quadrado = 25
 altura_quadrado = 25
 x_quadrado = largura_tela // 2 - largura_quadrado // 2
@@ -40,6 +39,16 @@ raio_bolinha = 7
 num_bolinhas = 30
 bolinhas = []
 
+# Configuração dos quadrados inimigos
+largura_inimigo = 20
+altura_inimigo = 20
+velocidade_inimigo = 3
+inimigos = [
+    {"cor": VERDE, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
+    {"cor": AMARELO, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
+    {"cor": ROSA, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
+]
+
 # Função para criar bolinhas aleatórias na tela
 def cria_bolinhas():
     for _ in range(num_bolinhas):
@@ -47,11 +56,28 @@ def cria_bolinhas():
         y = random.randint(raio_bolinha, altura_tela - raio_bolinha)
         bolinhas.append((x, y))
 
-# Detecta colisão entre o quadrado e uma bolinha
+# Detecta colisão entre o quadrado vermelho e uma bolinha
 def verifica_colisao(bolinha):
     x_bolinha, y_bolinha = bolinha
     return (x_quadrado < x_bolinha < x_quadrado + largura_quadrado) and \
            (y_quadrado < y_bolinha < y_quadrado + altura_quadrado)
+
+# Função para mover os inimigos em direção ao quadrado vermelho
+def mover_inimigos():
+    for inimigo in inimigos:
+        x_inimigo, y_inimigo = inimigo["pos"]
+        if x_inimigo < x_quadrado:
+            x_inimigo += velocidade_inimigo
+        elif x_inimigo > x_quadrado:
+            x_inimigo -= velocidade_inimigo
+
+        if y_inimigo < y_quadrado:
+            y_inimigo += velocidade_inimigo
+        elif y_inimigo > y_quadrado:
+            y_inimigo -= velocidade_inimigo
+
+        # Atualiza a posição do inimigo
+        inimigo["pos"] = [x_inimigo, y_inimigo]
 
 # Função principal do jogo
 def jogo():
@@ -79,7 +105,7 @@ def jogo():
         elif teclas[pygame.K_s]:  # Baixo
             direcao_x = 0
             direcao_y = velocidade
-        if teclas[pygame.K_LEFT]:  # Esquerda
+        elif teclas[pygame.K_LEFT]:  # Esquerda
             direcao_x = -velocidade
             direcao_y = 0
         elif teclas[pygame.K_RIGHT]:  # Direita
@@ -92,7 +118,7 @@ def jogo():
             direcao_x = 0
             direcao_y = velocidade
 
-        # Movimento do quadrado com limite de bordas
+        # Movimento do quadrado vermelho com limite de bordas
         x_quadrado += direcao_x
         y_quadrado += direcao_y
 
@@ -106,6 +132,9 @@ def jogo():
         elif y_quadrado > altura_tela - altura_quadrado:
             y_quadrado = altura_tela - altura_quadrado
 
+        # Move os inimigos na direção do quadrado vermelho
+        mover_inimigos()
+
         # Verifica colisões e remove bolinhas consumidas
         bolinhas_consumidas = [bolinha for bolinha in bolinhas if verifica_colisao(bolinha)]
         for bolinha in bolinhas_consumidas:
@@ -118,7 +147,11 @@ def jogo():
         for bolinha in bolinhas:
             pygame.draw.circle(tela, AZUL, bolinha, raio_bolinha)
         
-        # Desenha o quadrado
+        # Desenha os inimigos
+        for inimigo in inimigos:
+            pygame.draw.rect(tela, inimigo["cor"], (*inimigo["pos"], largura_inimigo, altura_inimigo))
+        
+        # Desenha o quadrado vermelho
         pygame.draw.rect(tela, VERMELHO, (x_quadrado, y_quadrado, largura_quadrado, altura_quadrado))
         
         # Atualiza a tela
