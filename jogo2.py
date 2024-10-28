@@ -13,11 +13,12 @@ pygame.init()
 largura_tela = 1000
 altura_tela = 805
 tela = pygame.display.set_mode((largura_tela, altura_tela))
-pygame.display.set_caption("Quadrado Móvel")
+pygame.display.set_caption("Quadrado Móvel com Bolinhas")
 
 # Cores
 BRANCO = (255, 255, 255)
 VERMELHO = (255, 0, 0)
+AZUL = (0, 0, 255)
 
 # Configuração do quadrado
 largura_quadrado = 50
@@ -34,9 +35,29 @@ direcao_y = 0
 clock = pygame.time.Clock()
 FPS = 60
 
+# Configuração das bolinhas
+raio_bolinha = 10
+num_bolinhas = 10
+bolinhas = []
+
+# Função para criar bolinhas aleatórias na tela
+def cria_bolinhas():
+    for _ in range(num_bolinhas):
+        x = random.randint(raio_bolinha, largura_tela - raio_bolinha)
+        y = random.randint(raio_bolinha, altura_tela - raio_bolinha)
+        bolinhas.append((x, y))
+
+# Detecta colisão entre o quadrado e uma bolinha
+def verifica_colisao(bolinha):
+    x_bolinha, y_bolinha = bolinha
+    return (x_quadrado < x_bolinha < x_quadrado + largura_quadrado) and \
+           (y_quadrado < y_bolinha < y_quadrado + altura_quadrado)
+
 # Função principal do jogo
 def jogo():
     global x_quadrado, y_quadrado, direcao_x, direcao_y
+    
+    cria_bolinhas()  # Cria as bolinhas no início
     rodando = True
     while rodando:
         # Verifica eventos
@@ -85,8 +106,17 @@ def jogo():
         elif y_quadrado > altura_tela - altura_quadrado:
             y_quadrado = altura_tela - altura_quadrado
 
+        # Verifica colisões e remove bolinhas consumidas
+        bolinhas_consumidas = [bolinha for bolinha in bolinhas if verifica_colisao(bolinha)]
+        for bolinha in bolinhas_consumidas:
+            bolinhas.remove(bolinha)
+
         # Limpa a tela
         tela.fill(BRANCO)
+        
+        # Desenha as bolinhas
+        for bolinha in bolinhas:
+            pygame.draw.circle(tela, AZUL, bolinha, raio_bolinha)
         
         # Desenha o quadrado
         pygame.draw.rect(tela, VERMELHO, (x_quadrado, y_quadrado, largura_quadrado, altura_quadrado))
