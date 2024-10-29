@@ -42,11 +42,11 @@ bolinhas = []
 # Configuração dos quadrados inimigos
 largura_inimigo = 20
 altura_inimigo = 20
-velocidade_inimigo = 2
+velocidade_inimigo = 4.5
 inimigos = [
-    {"cor": VERDE, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "direcao": [velocidade_inimigo, 0]},
-    {"cor": AMARELO, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "direcao": [0, velocidade_inimigo]},
-    {"cor": ROSA, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "direcao": [velocidade_inimigo, 0]},
+    {"cor": VERDE, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
+    {"cor": AMARELO, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
+    {"cor": ROSA, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
 ]
 
 # Função para criar bolinhas aleatórias na tela
@@ -62,45 +62,40 @@ def verifica_colisao(bolinha):
     return (x_quadrado < x_bolinha < x_quadrado + largura_quadrado) and \
            (y_quadrado < y_bolinha < y_quadrado + altura_quadrado)
 
-# Verifica colisão entre dois quadrados (usado para inimigos)
-def verifica_colisao_inimigos(pos1, pos2, largura, altura):
+# Função para detectar colisão entre inimigo e quadrado vermelho
+def verifica_colisao_com_vermelho(inimigo_pos):
     return (
-        pos1[0] < pos2[0] + largura and
-        pos1[0] + largura > pos2[0] and
-        pos1[1] < pos2[1] + altura and
-        pos1[1] + altura > pos2[1]
+        inimigo_pos[0] < x_quadrado + largura_quadrado and
+        inimigo_pos[0] + largura_inimigo > x_quadrado and
+        inimigo_pos[1] < y_quadrado + altura_quadrado and
+        inimigo_pos[1] + altura_inimigo > y_quadrado
     )
 
 # Função para mover os inimigos em direção ao quadrado vermelho
 def mover_inimigos():
     for inimigo in inimigos:
         x_inimigo, y_inimigo = inimigo["pos"]
-        direcao_x_inimigo, direcao_y_inimigo = inimigo["direcao"]
 
-        # Movimenta o inimigo somente em uma direção
-        if direcao_x_inimigo != 0:  # Se está movendo na horizontal
+        # Verifica a posição e move em direção ao quadrado vermelho
+        if abs(x_inimigo - x_quadrado) > abs(y_inimigo - y_quadrado):
+            # Movimento horizontal
             if x_inimigo < x_quadrado:
                 x_inimigo += velocidade_inimigo
             elif x_inimigo > x_quadrado:
                 x_inimigo -= velocidade_inimigo
-        elif direcao_y_inimigo != 0:  # Se está movendo na vertical
+        else:
+            # Movimento vertical
             if y_inimigo < y_quadrado:
                 y_inimigo += velocidade_inimigo
             elif y_inimigo > y_quadrado:
                 y_inimigo -= velocidade_inimigo
 
-        # Verifica colisão com outros inimigos e ajusta direção se necessário
-        for outro_inimigo in inimigos:
-            if outro_inimigo != inimigo and verifica_colisao_inimigos([x_inimigo, y_inimigo], outro_inimigo["pos"], largura_inimigo, altura_inimigo):
-                # Inverte a direção para evitar colisão
-                if direcao_x_inimigo != 0:
-                    direcao_x_inimigo = -direcao_x_inimigo
-                else:
-                    direcao_y_inimigo = -direcao_y_inimigo
+        # Verifica colisão com o quadrado vermelho
+        if verifica_colisao_com_vermelho([x_inimigo, y_inimigo]):
+            continue  # Não se move se está colidindo com o quadrado vermelho
 
-        # Atualiza a posição e direção do inimigo
+        # Atualiza a posição do inimigo
         inimigo["pos"] = [x_inimigo, y_inimigo]
-        inimigo["direcao"] = [direcao_x_inimigo, direcao_y_inimigo]
 
 # Função principal do jogo
 def jogo():
