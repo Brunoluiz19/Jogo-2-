@@ -24,7 +24,7 @@ largura_quadrado = 25
 altura_quadrado = 25
 x_quadrado = largura_tela // 2 - largura_quadrado // 2
 y_quadrado = altura_tela // 2 - altura_quadrado // 2
-velocidade = 4
+velocidade = 5
 
 # Direção inicial
 direcao_x = velocidade
@@ -39,14 +39,13 @@ raio_bolinha = 7
 num_bolinhas = 30
 bolinhas = []
 
-# Configuração dos quadrados inimigos
+# Configuração dos quadrados inimigos com velocidades diferentes
 largura_inimigo = 20
 altura_inimigo = 20
-velocidade_inimigo = 4.5
 inimigos = [
-    {"cor": VERDE, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
-    {"cor": AMARELO, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
-    {"cor": ROSA, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)]},
+    {"cor": VERDE, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "velocidade": random.uniform(2, 4)},
+    {"cor": AMARELO, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "velocidade": random.uniform(3, 5)},
+    {"cor": ROSA, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "velocidade": random.uniform(3, 4)},
 ]
 
 # Função para criar bolinhas aleatórias na tela
@@ -75,6 +74,7 @@ def verifica_colisao_com_vermelho(inimigo_pos):
 def mover_inimigos():
     for inimigo in inimigos:
         x_inimigo, y_inimigo = inimigo["pos"]
+        velocidade_inimigo = inimigo["velocidade"]
 
         # Verifica a posição e move em direção ao quadrado vermelho
         if abs(x_inimigo - x_quadrado) > abs(y_inimigo - y_quadrado):
