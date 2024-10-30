@@ -9,7 +9,7 @@ pygame.init()
 largura_tela = 1000
 altura_tela = 805
 tela = pygame.display.set_mode((largura_tela, altura_tela))
-pygame.display.set_caption("Quadrado Móvel com Bolinhas e Inimigos")
+pygame.display.set_caption("Come Come")
 
 # Cores
 BRANCO = (255, 255, 255)
@@ -18,6 +18,7 @@ AZUL = (0, 0, 255)
 VERDE = (0, 255, 0)
 AMARELO = (255, 255, 0)
 ROSA = (255, 0, 255)
+CINZA = (200, 200, 200)  # Cor para o grid
 
 # Configuração do quadrado vermelho
 largura_quadrado = 25
@@ -47,6 +48,16 @@ inimigos = [
     {"cor": AMARELO, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "velocidade": random.uniform(3, 5)},
     {"cor": ROSA, "pos": [random.randint(0, largura_tela - largura_inimigo), random.randint(0, altura_tela - altura_inimigo)], "velocidade": random.uniform(3, 4)},
 ]
+
+# Função para desenhar o grid
+def desenha_grid():
+    tamanho_celula = 40  # Tamanho de cada célula do grid
+    # Linhas verticais
+    for x in range(0, largura_tela, tamanho_celula):
+        pygame.draw.line(tela, CINZA, (x, 0), (x, altura_tela))
+    # Linhas horizontais
+    for y in range(0, altura_tela, tamanho_celula):
+        pygame.draw.line(tela, CINZA, (0, y), (largura_tela, y))
 
 # Função para criar bolinhas aleatórias na tela
 def cria_bolinhas():
@@ -123,18 +134,6 @@ def jogo():
         elif teclas[pygame.K_s]:  # Baixo
             direcao_x = 0
             direcao_y = velocidade
-        elif teclas[pygame.K_LEFT]:  # Esquerda
-            direcao_x = -velocidade
-            direcao_y = 0
-        elif teclas[pygame.K_RIGHT]:  # Direita
-            direcao_x = velocidade
-            direcao_y = 0
-        elif teclas[pygame.K_UP]:  # Cima
-            direcao_x = 0
-            direcao_y = -velocidade
-        elif teclas[pygame.K_DOWN]:  # Baixo
-            direcao_x = 0
-            direcao_y = velocidade
 
         # Movimento do quadrado vermelho com limite de bordas
         x_quadrado += direcao_x
@@ -160,6 +159,9 @@ def jogo():
 
         # Limpa a tela
         tela.fill(BRANCO)
+        
+        # Desenha o grid
+        desenha_grid()
         
         # Desenha as bolinhas
         for bolinha in bolinhas:
