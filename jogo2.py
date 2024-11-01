@@ -108,6 +108,29 @@ def mover_inimigos():
         # Atualiza a posição do inimigo
         inimigo["pos"] = [x_inimigo, y_inimigo]
 
+# Função para exibir a tela inicial
+def tela_inicial():
+    fonte = pygame.font.Font(None, 60)
+    texto_titulo = fonte.render("Bem-vindo ao Come Come", True, VERMELHO)
+    texto_iniciar = fonte.render("Pressione ESPAÇO para começar", True, AZUL)
+    
+    rodando = True
+    while rodando:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    rodando = False
+        
+        tela.fill(BRANCO)
+        tela.blit(texto_titulo, (largura_tela // 2 - texto_titulo.get_width() // 2, altura_tela // 3))
+        tela.blit(texto_iniciar, (largura_tela // 2 - texto_iniciar.get_width() // 2, altura_tela // 2))
+        
+        pygame.display.flip()
+        clock.tick(FPS)
+
 # Função principal do jogo
 def jogo():
     global x_quadrado, y_quadrado, direcao_x, direcao_y
@@ -183,5 +206,6 @@ def jogo():
     pygame.quit()
     sys.exit()
 
-# Chama a função principal
+# Executa a tela inicial e depois o jogo
+tela_inicial()
 jogo()
