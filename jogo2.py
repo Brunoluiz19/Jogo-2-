@@ -20,17 +20,30 @@ AMARELO = (255, 255, 0)
 ROSA = (255, 0, 255)
 CINZA = (200, 200, 200)  # Cor para o grid
 CINZA_ESCURO = (100, 100, 100)  # Cor para o botão
-
+PRETO = (0, 0, 0)
 # Configuração do quadrado vermelho
-largura_quadrado = 25
-altura_quadrado = 25
-x_quadrado = largura_tela // 2 - largura_quadrado // 2
-y_quadrado = altura_tela // 2 - altura_quadrado // 2
+largura_pacman = 25
+altura_pacman = 25
+x_quadrado = largura_tela // 2 - largura_pacman // 2
+y_quadrado = altura_tela // 2 - altura_pacman // 2
 velocidade = 5
 
 # Direção inicial
 direcao_x = velocidade
 direcao_y = 0
+
+# Carregar imagens do Pac-Man (boca aberta e boca fechada)
+pacman_aberto = pygame.image.load("Pac_Man.svg.png")
+pacman_aberto = pygame.transform.scale(pacman_aberto, (largura_pacman, altura_pacman))
+
+# Cria a imagem com a boca fechada programaticamente
+pacman_fechado = pygame.Surface((largura_pacman, altura_pacman), pygame.SRCALPHA)
+pygame.draw.circle(pacman_fechado, AMARELO, (largura_pacman // 2, altura_pacman // 2), largura_pacman // 2)  # Corpo
+pygame.draw.circle(pacman_fechado, PRETO, (35, 15), 7)  # Olho
+pygame.draw.polygon(pacman_fechado, PRETO, [(25, 25), (50, 25), (25, 50)])  # Boca fechada
+
+# Controle da animação
+aberto = True
 
 # Configuração de FPS
 clock = pygame.time.Clock()
@@ -70,15 +83,15 @@ def cria_bolinhas():
 # Detecta colisão entre o quadrado vermelho e uma bolinha
 def verifica_colisao(bolinha):
     x_bolinha, y_bolinha = bolinha
-    return (x_quadrado < x_bolinha < x_quadrado + largura_quadrado) and \
-           (y_quadrado < y_bolinha < y_quadrado + altura_quadrado)
+    return (x_quadrado < x_bolinha < x_quadrado + largura_pacman) and \
+           (y_quadrado < y_bolinha < y_quadrado + altura_pacman)
 
 # Função para detectar colisão entre inimigo e quadrado vermelho
 def verifica_colisao_com_vermelho(inimigo_pos):
     return (
-        inimigo_pos[0] < x_quadrado + largura_quadrado and
+        inimigo_pos[0] < x_quadrado + largura_pacman and
         inimigo_pos[0] + largura_inimigo > x_quadrado and
-        inimigo_pos[1] < y_quadrado + altura_quadrado and
+        inimigo_pos[1] < y_quadrado + altura_pacman and
         inimigo_pos[1] + altura_inimigo > y_quadrado
     )
 
@@ -185,12 +198,12 @@ def jogo():
         # Restringe o quadrado às bordas da tela
         if x_quadrado < 0:
             x_quadrado = 0
-        elif x_quadrado > largura_tela - largura_quadrado:
-            x_quadrado = largura_tela - largura_quadrado
+        elif x_quadrado > largura_tela - largura_pacman:
+            x_quadrado = largura_tela - largura_pacman
         if y_quadrado < 0:
             y_quadrado = 0
-        elif y_quadrado > altura_tela - altura_quadrado:
-            y_quadrado = altura_tela - altura_quadrado
+        elif y_quadrado > altura_tela - altura_pacman:
+            y_quadrado = altura_tela - altura_pacman
 
         # Move os inimigos na direção do quadrado vermelho
         mover_inimigos()
@@ -215,7 +228,7 @@ def jogo():
             pygame.draw.rect(tela, inimigo["cor"], (*inimigo["pos"], largura_inimigo, altura_inimigo))
         
         # Desenha o quadrado vermelho
-        pygame.draw.rect(tela, VERMELHO, (x_quadrado, y_quadrado, largura_quadrado, altura_quadrado))
+        pygame.draw.rect(tela, VERMELHO, (x_quadrado, y_quadrado, largura_pacman, altura_pacman))
         
         # Atualiza a tela
         pygame.display.flip()
