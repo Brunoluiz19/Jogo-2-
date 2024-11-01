@@ -19,6 +19,7 @@ VERDE = (0, 255, 0)
 AMARELO = (255, 255, 0)
 ROSA = (255, 0, 255)
 CINZA = (200, 200, 200)  # Cor para o grid
+CINZA_ESCURO = (100, 100, 100)  # Cor para o botão
 
 # Configuração do quadrado vermelho
 largura_quadrado = 25
@@ -108,11 +109,25 @@ def mover_inimigos():
         # Atualiza a posição do inimigo
         inimigo["pos"] = [x_inimigo, y_inimigo]
 
-# Função para exibir a tela inicial
+# Função para desenhar o botão e verificar clique
+def desenha_botao(texto, pos_x, pos_y, largura, altura, cor_botao, cor_texto):
+    fonte = pygame.font.Font(None, 50)
+    texto_render = fonte.render(texto, True, cor_texto)
+    
+    # Desenha o botão
+    botao_rect = pygame.Rect(pos_x, pos_y, largura, altura)
+    pygame.draw.rect(tela, cor_botao, botao_rect)
+    
+    # Desenha o texto no centro do botão
+    tela.blit(texto_render, (pos_x + (largura - texto_render.get_width()) // 2, pos_y + (altura - texto_render.get_height()) // 2))
+    
+    # Retorna o rect do botão para verificação de clique
+    return botao_rect
+
+# Função para exibir a tela inicial com o botão de início
 def tela_inicial():
     fonte = pygame.font.Font(None, 60)
     texto_titulo = fonte.render("Bem-vindo ao Come Come", True, VERMELHO)
-    texto_iniciar = fonte.render("Pressione ESPAÇO para começar", True, AZUL)
     
     rodando = True
     while rodando:
@@ -120,13 +135,18 @@ def tela_inicial():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    rodando = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Clique com o botão esquerdo do mouse
+                    if botao_rect.collidepoint(event.pos):  # Verifica se o botão foi clicado
+                        rodando = False  # Sai da tela inicial para iniciar o jogo
         
         tela.fill(BRANCO)
+        
+        # Desenha o título
         tela.blit(texto_titulo, (largura_tela // 2 - texto_titulo.get_width() // 2, altura_tela // 3))
-        tela.blit(texto_iniciar, (largura_tela // 2 - texto_iniciar.get_width() // 2, altura_tela // 2))
+        
+        # Desenha o botão "Iniciar"
+        botao_rect = desenha_botao("Iniciar", largura_tela // 2 - 100, altura_tela // 2, 200, 60, CINZA_ESCURO, BRANCO)
         
         pygame.display.flip()
         clock.tick(FPS)
