@@ -33,7 +33,7 @@ direcao_x = velocidade
 direcao_y = 0
 
 # Carregar imagens do Pac-Man (boca aberta e boca fechada)
-pacman_aberto = pygame.image.load("Pac_Man.svg.png")
+pacman_aberto = pygame.image.load("")
 pacman_aberto = pygame.transform.scale(pacman_aberto, (largura_pacman, altura_pacman))
 
 # Cria a imagem com a boca fechada programaticamente
