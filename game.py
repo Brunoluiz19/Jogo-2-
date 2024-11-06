@@ -11,3 +11,6 @@ class game:
         self.clock = pygame.time.Clock()
         self.rofadndo = True 
     
+    def jogo(self):
+        # inicia classes 
+        self.grupo_sprite = pygame
