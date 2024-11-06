@@ -1,6 +1,6 @@
 import pygame
 import constante
-import game
+
 class game:
     def __init__(self):
         # Tela 
@@ -20,3 +20,8 @@ class game:
         # jogo rodando 
 
         self.jogando = True
+        while self.jogando:
+            self.clock.tick(constante.FPS)
+            self.eventos()
+            self.atualiza()
+            self.desenha()

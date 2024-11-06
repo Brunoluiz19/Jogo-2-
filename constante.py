@@ -4,3 +4,6 @@ ALTURA = 600
 
 #titulo 
 TITULO = "COME - COME"
+
+#FPS
+FPS = 60
