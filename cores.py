@@ -10,7 +10,8 @@ class Cores:
     branco = (255, 255, 255)
     azul_escuro = (48, 48, 130)
     azul_claro = (65, 90, 170)
+    preto = (0,0,0)
 
     @classmethod
     def obter_cores_celulas(cls):
-        return [cls.cinza_escuro, cls.verde, cls.vermelho, cls.laranja, cls.amarelo, cls.roxo, cls.ciano, cls.azul]
+        return [cls.cinza_escuro, cls.verde, cls.vermelho, cls.laranja, cls.amarelo, cls.roxo, cls.ciano, cls.azul, cls.preto]
