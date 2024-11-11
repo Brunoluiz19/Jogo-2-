@@ -16,40 +16,21 @@ show_start_screen = True
 game = True
 
 class Player:
-    def __init__(self, linha, coluna, tamanho=30, velocidade=0.01):
+    def __init__(self, linha, coluna, tamanho=30, velocidade=0.1):
         self.linha = linha
         self.coluna = coluna
         self.tamanho = tamanho
         self.velocidade = velocidade
         self.tamanho_celula = grid.tamanho_celula
-        self.direcao = None
-        self.teclas_ativas = {pygame.K_LEFT: False, pygame.K_RIGHT: False, pygame.K_UP: False, pygame.K_DOWN: False,
-                              pygame.K_a: False, pygame.K_d: False, pygame.K_w: False, pygame.K_s: False}
 
-    def set_direcao(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key in self.teclas_ativas and not self.teclas_ativas[event.key]:
-                if event.key in [pygame.K_LEFT, pygame.K_a]:
-                    self.direcao = 'esquerda'
-                elif event.key in [pygame.K_RIGHT, pygame.K_d]:
-                    self.direcao = 'direita'
-                elif event.key in [pygame.K_UP, pygame.K_w]:
-                    self.direcao = 'cima'
-                elif event.key in [pygame.K_DOWN, pygame.K_s]:
-                    self.direcao = 'baixo'
-                self.teclas_ativas[event.key] = True
-
-        elif event.type == pygame.KEYUP and event.key in self.teclas_ativas:
-            self.teclas_ativas[event.key] = False
-
-    def move(self):
-        if self.direcao == 'esquerda' and self.coluna > 0:
+    def move(self, keys):
+        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.coluna > 0:
             self.coluna -= self.velocidade
-        elif self.direcao == 'direita' and self.coluna < grid.num_colunas - 1:
+        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.coluna < grid.num_colunas - 1:
             self.coluna += self.velocidade
-        elif self.direcao == 'cima' and self.linha > 0:
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.linha > 0:
             self.linha -= self.velocidade
-        elif self.direcao == 'baixo' and self.linha < grid.num_linhas - 1:
+        if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.linha < grid.num_linhas - 1:
             self.linha += self.velocidade
 
     def draw(self, screen):
@@ -71,15 +52,15 @@ while game:
             game = False
         if show_start_screen and event.type == pygame.KEYDOWN:
             show_start_screen = False
-        elif not show_start_screen:
-            player.set_direcao(event)
+
+    keys = pygame.key.get_pressed()
 
     if show_start_screen:
         draw_start_screen()
     else:
         window.fill((255, 255, 255))
         grid.draw(window)
-        player.move()
+        player.move(keys)
         player.draw(window)
 
     pygame.display.update()
