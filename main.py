@@ -3,6 +3,7 @@ import pygame
 from grid import Grid
 
 pygame.init()
+clock = pygame.time.Clock()
 
 # Layout do labirinto: 1 representa uma parede e 0 representa um caminho
 maze = [
@@ -41,7 +42,7 @@ grid.tamanho_celula = 30
 largura_janela = grid.num_colunas * grid.tamanho_celula
 altura_janela = grid.num_linhas * grid.tamanho_celula
 window = pygame.display.set_mode((largura_janela, altura_janela))
-pygame.display.set_caption('Labirinto')
+pygame.display.set_caption('Pac Man')
 
 title_font = pygame.font.Font(None, 40)
 show_start_screen = True
@@ -111,6 +112,7 @@ def draw_maze(screen):
                 pygame.draw.rect(screen, Cores.azul, (x, y, grid.tamanho_celula, grid.tamanho_celula))
 
 while game:
+    clock.tick(5)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game = False
