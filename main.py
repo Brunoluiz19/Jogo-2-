@@ -45,8 +45,12 @@ window = pygame.display.set_mode((largura_janela, altura_janela))
 pygame.display.set_caption('Pac Man')
 
 title_font = pygame.font.Font(None, 40)
+score_font = pygame.font.Font(None, 30)
 show_start_screen = True
 game = True
+
+# Variável para armazenar a pontuação
+score = 0
 
 class Player:
     def __init__(self, linha, coluna, tamanho=30, velocidade=1):
@@ -90,7 +94,6 @@ class Player:
         if maze[nova_linha][nova_coluna] == 0:
             self.linha, self.coluna = nova_linha, nova_coluna
 
-
     def draw(self, screen):
         """Desenha o jogador na tela."""
         x = self.coluna * self.tamanho_celula
@@ -115,8 +118,11 @@ class Bolinhas:
             pygame.draw.circle(screen, Cores.amarelo, (x, y), grid.tamanho_celula // 6)
 
     def coletar(self, linha, coluna):
+        global score
         if (linha, coluna) in self.posicoes:
             self.posicoes.remove((linha, coluna))
+            score += 10  # Incrementa a pontuação
+
 
 # Cria uma instância das bolinhas
 bolinhas = Bolinhas()
@@ -137,6 +143,12 @@ def draw_maze(screen):
             if maze[linha][coluna] == 1:
                 pygame.draw.rect(screen, Cores.azul, (x, y, grid.tamanho_celula, grid.tamanho_celula))
 
+def draw_score(screen):
+    """Desenha a pontuação na tela."""
+    score_text = score_font.render(f"Pontos: {score}", True, Cores.branco)
+    screen.blit(score_text, (10, 10))
+
+
 while game:
     clock.tick(5)
     for event in pygame.event.get():
@@ -154,6 +166,7 @@ while game:
         player.move()
         bolinhas.coletar(player.linha, player.coluna)  # Remove bolinhas quando o jogador passa por elas
         player.draw(window)  # Desenha o jogador
+        draw_score(window)  # Desenha a pontuação
 
     pygame.display.update()
 
