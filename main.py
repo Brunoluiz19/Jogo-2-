@@ -1,6 +1,8 @@
 from cores import Cores
 import pygame
 from grid import Grid
+import random
+from collections import deque
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -15,11 +17,11 @@ maze = [
     [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
@@ -157,10 +159,73 @@ def draw_maze(screen):
                 pygame.draw.rect(screen, Cores.azul, (x, y, grid.tamanho_celula, grid.tamanho_celula))
 
 def draw_score(screen):
-    """Desenha a pontuação na tela."""
     score_text = score_font.render(f"Pontos: {score}", True, Cores.branco)
     screen.blit(score_text, (10, 10))
 
+class Enemy:
+    def __init__(self, linha, coluna, tamanho=30, velocidade=1):
+        self.linha = linha
+        self.coluna = coluna
+        self.tamanho = tamanho
+        self.velocidade = velocidade
+        self.tamanho_celula = grid.tamanho_celula
+        self.rota = []  # Lista de passos para seguir
+        self.tempo_espera = 30  # Tempo para calcular uma nova rota
+
+    def calcula_rota(self, destino_linha, destino_coluna):
+        """Calcula a rota mais curta até o jogador usando BFS."""
+        fila = deque([(self.linha, self.coluna)])
+        visitados = set()
+        caminhos = { (self.linha, self.coluna): None }
+
+        while fila:
+            linha_atual, coluna_atual = fila.popleft()
+            if (linha_atual, coluna_atual) == (destino_linha, destino_coluna):
+                # Reconstrói o caminho
+                rota = []
+                while (linha_atual, coluna_atual) != (self.linha, self.coluna):
+                    rota.append((linha_atual, coluna_atual))
+                    linha_atual, coluna_atual = caminhos[(linha_atual, coluna_atual)]
+                rota.reverse()
+                return rota
+
+            for delta_linha, delta_coluna in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nova_linha = linha_atual + delta_linha
+                nova_coluna = coluna_atual + delta_coluna
+                if (0 <= nova_linha < grid.num_linhas and 
+                    0 <= nova_coluna < grid.num_colunas and
+                    maze[nova_linha][nova_coluna] == 0 and
+                    (nova_linha, nova_coluna) not in visitados):
+                    visitados.add((nova_linha, nova_coluna))
+                    fila.append((nova_linha, nova_coluna))
+                    caminhos[(nova_linha, nova_coluna)] = (linha_atual, coluna_atual)
+        
+        return []  # Sem caminho
+
+    def move(self, player):
+        # Recalcula a rota periodicamente
+        if self.tempo_espera <= 0:
+            self.rota = self.calcula_rota(player.linha, player.coluna)
+            self.tempo_espera = 30  # Aguarda para recalcular a rota novamente
+        else:
+            self.tempo_espera -= 1
+
+        # Move o inimigo seguindo a rota calculada
+        if self.rota:
+            proxima_linha, proxima_coluna = self.rota[0]
+            self.linha, self.coluna = proxima_linha, proxima_coluna
+            self.rota.pop(0)  # Remove o passo atual
+
+    def draw(self, screen):
+        x = self.coluna * self.tamanho_celula
+        y = self.linha * self.tamanho_celula
+        pygame.draw.rect(screen, Cores.verde, (x, y, self.tamanho_celula, self.tamanho_celula))
+
+
+# Inicializa o inimigo no meio do mapa
+linha_inicial = num_linhas // 2
+coluna_inicial = num_colunas // 2
+enemy = Enemy(linha_inicial, coluna_inicial, tamanho=grid.tamanho_celula)
 
 while game:
     clock.tick(5)
@@ -179,6 +244,10 @@ while game:
         player.move()
         bolinhas.coletar(player.linha, player.coluna)  # Remove bolinhas quando o jogador passa por elas
         player.draw(window)  # Desenha o jogador
+
+        enemy.move(player)  # Move o inimigo
+        enemy.draw(window)  # Desenha o inimigo
+
         draw_score(window)  # Desenha a pontuação
 
     pygame.display.update()
