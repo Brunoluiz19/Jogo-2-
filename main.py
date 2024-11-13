@@ -90,10 +90,36 @@ class Player:
         if maze[nova_linha][nova_coluna] == 0:
             self.linha, self.coluna = nova_linha, nova_coluna
 
+
     def draw(self, screen):
+        """Desenha o jogador na tela."""
         x = self.coluna * self.tamanho_celula
         y = self.linha * self.tamanho_celula
-        pygame.draw.rect(screen, (255, 0, 0), (x, y, self.tamanho, self.tamanho))
+        pygame.draw.rect(screen, Cores.vermelho, (x, y, self.tamanho_celula, self.tamanho_celula))
+
+
+class Bolinhas:
+    def __init__(self):
+        # Cria uma lista com as posições iniciais de todas as bolinhas
+        self.posicoes = [
+            (linha, coluna)
+            for linha in range(len(maze))
+            for coluna in range(len(maze[0]))
+            if maze[linha][coluna] == 0
+        ]
+
+    def draw(self, screen):
+        for linha, coluna in self.posicoes:
+            x = coluna * grid.tamanho_celula + grid.tamanho_celula // 2
+            y = linha * grid.tamanho_celula + grid.tamanho_celula // 2
+            pygame.draw.circle(screen, Cores.amarelo, (x, y), grid.tamanho_celula // 6)
+
+    def coletar(self, linha, coluna):
+        if (linha, coluna) in self.posicoes:
+            self.posicoes.remove((linha, coluna))
+
+# Cria uma instância das bolinhas
+bolinhas = Bolinhas()
 
 player = Player(1, 1, tamanho=grid.tamanho_celula)
 
@@ -121,13 +147,13 @@ while game:
         elif not show_start_screen:
             player.set_direcao(event)
 
-    if show_start_screen:
-        draw_start_screen()
-    else:
+    if not show_start_screen:
         window.fill((255, 255, 255))
         draw_maze(window)  # Desenha o labirinto
+        bolinhas.draw(window)  # Desenha as bolinhas
         player.move()
-        player.draw(window)
+        bolinhas.coletar(player.linha, player.coluna)  # Remove bolinhas quando o jogador passa por elas
+        player.draw(window)  # Desenha o jogador
 
     pygame.display.update()
 
