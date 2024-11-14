@@ -163,58 +163,83 @@ def draw_score(screen):
     screen.blit(score_text, (10, 10))
 
 class Enemy:
-    def __init__(self, linha, coluna, tamanho=30, velocidade=1):
+    def __init__(self, linha, coluna, tamanho=30, velocidade=1, tempo_espera_inicial=60):
         self.linha = linha
         self.coluna = coluna
         self.tamanho = tamanho
         self.velocidade = velocidade
         self.tamanho_celula = grid.tamanho_celula
         self.rota = []  # Lista de passos para seguir
-        self.tempo_espera = 30  # Tempo para calcular uma nova rota
+        self.tempo_espera = tempo_espera_inicial  # Tempo de espera inicial antes de começar a se mover
+        self.perseguindo = False  # Indica se o inimigo está perseguindo o jogador
 
     def calcula_rota(self, destino_linha, destino_coluna):
-        """Calcula a rota mais curta até o jogador usando BFS."""
-        fila = deque([(self.linha, self.coluna)])
+        inicio = (self.linha, self.coluna)
+        destino = (destino_linha, destino_coluna)
+        fila = deque([inicio])
         visitados = set()
-        caminhos = { (self.linha, self.coluna): None }
+        caminhos = {inicio: []}
 
         while fila:
-            linha_atual, coluna_atual = fila.popleft()
-            if (linha_atual, coluna_atual) == (destino_linha, destino_coluna):
-                # Reconstrói o caminho
-                rota = []
-                while (linha_atual, coluna_atual) != (self.linha, self.coluna):
-                    rota.append((linha_atual, coluna_atual))
-                    linha_atual, coluna_atual = caminhos[(linha_atual, coluna_atual)]
-                rota.reverse()
-                return rota
+            atual = fila.popleft()
+            if atual == destino:
+                return caminhos[atual]
 
-            for delta_linha, delta_coluna in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                nova_linha = linha_atual + delta_linha
-                nova_coluna = coluna_atual + delta_coluna
-                if (0 <= nova_linha < grid.num_linhas and 
-                    0 <= nova_coluna < grid.num_colunas and
+            for direcao in [(0, 1), (1, 0), (0, -1), (-1, 0)]:  # Direções: direita, baixo, esquerda, cima
+                nova_linha = atual[0] + direcao[0]
+                nova_coluna = atual[1] + direcao[1]
+                novo_pos = (nova_linha, nova_coluna)
+
+                if (0 <= nova_linha < len(maze) and
+                    0 <= nova_coluna < len(maze[0]) and
                     maze[nova_linha][nova_coluna] == 0 and
-                    (nova_linha, nova_coluna) not in visitados):
-                    visitados.add((nova_linha, nova_coluna))
-                    fila.append((nova_linha, nova_coluna))
-                    caminhos[(nova_linha, nova_coluna)] = (linha_atual, coluna_atual)
-        
-        return []  # Sem caminho
+                    novo_pos not in visitados):
+
+                    visitados.add(novo_pos)
+                    fila.append(novo_pos)
+                    caminhos[novo_pos] = caminhos[atual] + [novo_pos]
+
+        return []  # Retorna rota vazia se não houver caminho
+
+    def pode_ver_player(self, player):
+        if self.linha == player.linha:  # Mesma linha
+            menor_coluna, maior_coluna = sorted([self.coluna, player.coluna])
+            for coluna in range(menor_coluna + 1, maior_coluna):
+                if maze[self.linha][coluna] == 1:  # Há uma parede no caminho
+                    return False
+            return True
+        elif self.coluna == player.coluna:  # Mesma coluna
+            menor_linha, maior_linha = sorted([self.linha, player.linha])
+            for linha in range(menor_linha + 1, maior_linha):
+                if maze[linha][self.coluna] == 1:  # Há uma parede no caminho
+                    return False
+            return True
+        return False
 
     def move(self, player):
-        # Recalcula a rota periodicamente
-        if self.tempo_espera <= 0:
-            self.rota = self.calcula_rota(player.linha, player.coluna)
-            self.tempo_espera = 30  # Aguarda para recalcular a rota novamente
-        else:
+        if self.tempo_espera > 0:  # Se ainda está no tempo de espera
             self.tempo_espera -= 1
+            return
 
-        # Move o inimigo seguindo a rota calculada
+        if self.pode_ver_player(player):
+            self.perseguindo = True
+            self.rota = self.calcula_rota(player.linha, player.coluna)
+        elif not self.perseguindo or not self.rota:
+            # Comportamento padrão: recalcula a rota para uma posição aleatória
+            self.perseguindo = False
+            if not self.rota:
+                destino = random.choice([
+                    (linha, coluna)
+                    for linha in range(grid.num_linhas)
+                    for coluna in range(grid.num_colunas)
+                    if maze[linha][coluna] == 0
+                ])
+                self.rota = self.calcula_rota(destino[0], destino[1])
+
         if self.rota:
             proxima_linha, proxima_coluna = self.rota[0]
             self.linha, self.coluna = proxima_linha, proxima_coluna
-            self.rota.pop(0)  # Remove o passo atual
+            self.rota.pop(0)
 
     def draw(self, screen):
         x = self.coluna * self.tamanho_celula
@@ -222,10 +247,23 @@ class Enemy:
         pygame.draw.rect(screen, Cores.verde, (x, y, self.tamanho_celula, self.tamanho_celula))
 
 
-# Inicializa o inimigo no meio do mapa
-linha_inicial = num_linhas // 2
-coluna_inicial = num_colunas // 2
-enemy = Enemy(linha_inicial, coluna_inicial, tamanho=grid.tamanho_celula)
+# Lista para armazenar todos os inimigos
+enemies = []
+
+# Criar múltiplos inimigos com tempos de espera individuais
+tempos_espera = [10, 20, 30, 40]  # Tempos de espera em ticks
+posicoes_iniciais = [
+    (num_linhas // 2, num_colunas // 2),  # Centro do mapa
+    (1, num_colunas - 2),  # Canto superior direito
+    (num_linhas - 2, 1),  # Canto inferior esquerdo
+    (num_linhas - 2, num_colunas - 2)  # Canto inferior direito
+]
+
+for i in range(4):  # Criar 4 inimigos
+    linha, coluna = posicoes_iniciais[i]
+    enemy = Enemy(linha, coluna, tamanho=grid.tamanho_celula, velocidade=1)
+    enemy.tempo_espera = tempos_espera[i]  # Configurar o tempo de espera inicial
+    enemies.append(enemy)
 
 while game:
     clock.tick(5)
@@ -245,8 +283,14 @@ while game:
         bolinhas.coletar(player.linha, player.coluna)  # Remove bolinhas quando o jogador passa por elas
         player.draw(window)  # Desenha o jogador
 
-        enemy.move(player)  # Move o inimigo
-        enemy.draw(window)  # Desenha o inimigo
+        # Atualizar e desenhar todos os inimigos
+        for enemy in enemies:
+            if enemy.tempo_espera <= 0:
+                enemy.move(player)  # Move o inimigo
+            else:
+                enemy.tempo_espera -= 1  # Aguarda antes de começar a se mover
+            enemy.draw(window)  # Desenha o inimigo
+
 
         draw_score(window)  # Desenha a pontuação
 
