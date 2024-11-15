@@ -65,6 +65,7 @@ class Player:
         self.direcao_desejada = None
         self.teclas_ativas = {pygame.K_LEFT: False, pygame.K_RIGHT: False, pygame.K_UP: False, pygame.K_DOWN: False,
                               pygame.K_a: False, pygame.K_d: False, pygame.K_w: False, pygame.K_s: False}
+        self.vidas = 3
 
     def set_direcao(self, event):
         if event.type == pygame.KEYDOWN:
@@ -115,6 +116,19 @@ class Player:
         y = self.linha * self.tamanho_celula
         pygame.draw.rect(screen, Cores.vermelho, (x, y, self.tamanho_celula, self.tamanho_celula))
 
+def verificar_colisao(player, enemies):
+    for enemy in enemies:
+        if player.linha == enemy.linha and player.coluna == enemy.coluna:
+            player.vidas -= 1  # Reduz a vida do jogador
+            if player.vidas == 0:
+                return True  # Fim do jogo
+            return False  # Perdeu uma vida, mas continua no jogo
+    return False
+
+# Função para desenhar as vidas do jogador na tela
+def draw_vidas(screen, vidas):
+    vida_text = score_font.render(f"Vidas: {vidas}", True, Cores.branco)
+    screen.blit(vida_text, (10, 40))    
 
 class Bolinhas:
     def __init__(self):
@@ -254,9 +268,9 @@ enemies = []
 tempos_espera = [10, 20, 30, 40]  # Tempos de espera em ticks
 posicoes_iniciais = [
     (num_linhas // 2, num_colunas // 2),  # Centro do mapa
-    (1, num_colunas - 2),  # Canto superior direito
-    (num_linhas - 2, 1),  # Canto inferior esquerdo
-    (num_linhas - 2, num_colunas - 2)  # Canto inferior direito
+    (num_linhas // 2, num_colunas // 2),  
+    (num_linhas // 2, num_colunas // 2),  
+    (num_linhas // 2, num_colunas // 2)   
 ]
 
 for i in range(4):  # Criar 4 inimigos
@@ -264,6 +278,13 @@ for i in range(4):  # Criar 4 inimigos
     enemy = Enemy(linha, coluna, tamanho=grid.tamanho_celula, velocidade=1)
     enemy.tempo_espera = tempos_espera[i]  # Configurar o tempo de espera inicial
     enemies.append(enemy)
+
+    if player.vidas == 0:
+        window.fill((0, 0, 0))
+        game_over_text = title_font.render("Game Over!", True, Cores.vermelho)
+        window.blit(game_over_text, game_over_text.get_rect(center=(largura_janela // 2, altura_janela // 2)))
+        pygame.display.update()
+        pygame.time.wait(3000)
 
 while game:
     clock.tick(5)
@@ -291,6 +312,13 @@ while game:
                 enemy.tempo_espera -= 1  # Aguarda antes de começar a se mover
             enemy.draw(window)  # Desenha o inimigo
 
+    # Verificar se algum inimigo alcançou o jogador
+    for enemy in enemies:
+        if enemy.linha == player.linha and enemy.coluna == player.coluna:
+            player.vidas -= 1  # Reduz a vida do jogador
+            if player.vidas == 0:
+                game = False
+                break
 
         draw_score(window)  # Desenha a pontuação
 
