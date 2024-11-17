@@ -66,6 +66,21 @@ class Player:
         self.teclas_ativas = {pygame.K_LEFT: False, pygame.K_RIGHT: False, pygame.K_UP: False, pygame.K_DOWN: False,
                               pygame.K_a: False, pygame.K_d: False, pygame.K_w: False, pygame.K_s: False}
         self.vidas = 3
+        self.frames = {
+            'esquerda': [pygame.image.load("sprites/pacman_0.png"),  # Imagem 1
+                         pygame.image.load("sprites/pacman_left1.png"),  # Imagem 2
+                         pygame.image.load("sprites/pacman_left2.png")],  # Imagem 3
+            'direita': [pygame.image.load("sprites/pacman_0.png"),  # Imagem 1
+                        pygame.image.load("sprites/pacman_right1.png"),  # Imagem 2
+                        pygame.image.load("sprites/pacman_right2.png")],  # Imagem 3
+            'cima': [pygame.image.load("sprites/pacman_0.png"),  # Imagem 1
+                     pygame.image.load("sprites/pacman_up1.png"),  # Imagem 2
+                     pygame.image.load("sprites/pacman_up2.png")],  # Imagem 3
+            'baixo': [pygame.image.load("sprites/pacman_0.png"),  # Imagem 1
+                      pygame.image.load("sprites/pacman_down1.png"),  # Imagem 2
+                      pygame.image.load("sprites/pacman_down2.png")]  # Imagem 3
+        }
+        self.tick_counter = 0
 
     def set_direcao(self, event):
         if event.type == pygame.KEYDOWN:
@@ -98,6 +113,9 @@ class Player:
             elif self.direcao == 'baixo':
                 self.linha += self.velocidade
 
+        # Atualiza o contador de ticks
+        self.tick_counter = (self.tick_counter + 1) % 5  # Reseta após 5 ticks
+
     def pode_mover(self, direcao):
         nova_linha, nova_coluna = self.linha, self.coluna
         if direcao == 'esquerda' and self.coluna > 0:
@@ -114,7 +132,19 @@ class Player:
     def draw(self, screen):
         x = self.coluna * self.tamanho_celula
         y = self.linha * self.tamanho_celula
-        pygame.draw.rect(screen, Cores.vermelho, (x, y, self.tamanho_celula, self.tamanho_celula))
+
+        # Determina o frame com base no tick
+        if self.direcao:
+            if self.tick_counter == 0:
+                current_frame = self.frames[self.direcao][0]  # Imagem 1
+            elif self.tick_counter in [1, 4]:
+                current_frame = self.frames[self.direcao][1]  # Imagem 2
+            elif self.tick_counter in [2, 3]:
+                current_frame = self.frames[self.direcao][2]  # Imagem 3
+        else:
+            current_frame = self.frames['direita'][0]  # Padrão: Imagem 1 olhando para a direita
+
+        screen.blit(pygame.transform.scale(current_frame, (self.tamanho_celula, self.tamanho_celula)), (x, y))
 
 def verificar_colisao(player, enemies):
     for enemy in enemies:
@@ -186,7 +216,30 @@ class Enemy:
         self.rota = []  # Lista de passos para seguir
         self.tempo_espera = tempo_espera_inicial  # Tempo de espera inicial antes de começar a se mover
         self.perseguindo = False  # Indica se o inimigo está perseguindo o jogador
+        self.direcao = None  # Direção atual do movimento
 
+
+        # Imagens do fantasma
+        self.frames = {
+            'esquerda': pygame.image.load("sprites/ghost_left.png"),
+            'direita': pygame.image.load("sprites/ghost_right.png"),
+            'cima': pygame.image.load("sprites/ghost_up.png"),
+            'baixo': pygame.image.load("sprites/ghost_down.png")
+        }
+    def pode_ver_player(self, player):
+        if self.linha == player.linha:  # Mesma linha
+            menor_coluna, maior_coluna = sorted([self.coluna, player.coluna])
+            for coluna in range(menor_coluna + 1, maior_coluna):
+                if maze[self.linha][coluna] == 1:  # Há uma parede no caminho
+                    return False
+            return True
+        elif self.coluna == player.coluna:  # Mesma coluna
+            menor_linha, maior_linha = sorted([self.linha, player.linha])
+            for linha in range(menor_linha + 1, maior_linha):
+                if maze[linha][self.coluna] == 1:  # Há uma parede no caminho
+                    return False
+            return True
+        return False
     def calcula_rota(self, destino_linha, destino_coluna):
         inicio = (self.linha, self.coluna)
         destino = (destino_linha, destino_coluna)
@@ -215,21 +268,6 @@ class Enemy:
 
         return []  # Retorna rota vazia se não houver caminho
 
-    def pode_ver_player(self, player):
-        if self.linha == player.linha:  # Mesma linha
-            menor_coluna, maior_coluna = sorted([self.coluna, player.coluna])
-            for coluna in range(menor_coluna + 1, maior_coluna):
-                if maze[self.linha][coluna] == 1:  # Há uma parede no caminho
-                    return False
-            return True
-        elif self.coluna == player.coluna:  # Mesma coluna
-            menor_linha, maior_linha = sorted([self.linha, player.linha])
-            for linha in range(menor_linha + 1, maior_linha):
-                if maze[linha][self.coluna] == 1:  # Há uma parede no caminho
-                    return False
-            return True
-        return False
-
     def move(self, player):
         if self.tempo_espera > 0:  # Se ainda está no tempo de espera
             self.tempo_espera -= 1
@@ -252,13 +290,27 @@ class Enemy:
 
         if self.rota:
             proxima_linha, proxima_coluna = self.rota[0]
+            if proxima_linha > self.linha:
+                self.direcao = 'baixo'
+            elif proxima_linha < self.linha:
+                self.direcao = 'cima'
+            elif proxima_coluna > self.coluna:
+                self.direcao = 'direita'
+            elif proxima_coluna < self.coluna:
+                self.direcao = 'esquerda'
+
             self.linha, self.coluna = proxima_linha, proxima_coluna
             self.rota.pop(0)
 
     def draw(self, screen):
         x = self.coluna * self.tamanho_celula
         y = self.linha * self.tamanho_celula
-        pygame.draw.rect(screen, Cores.verde, (x, y, self.tamanho_celula, self.tamanho_celula))
+        if self.direcao:
+            frame = self.frames[self.direcao]
+        else:
+            frame = self.frames['direita']  # Direção padrão: direita
+        screen.blit(pygame.transform.scale(frame, (self.tamanho_celula, self.tamanho_celula)), (x, y))
+
 
 
 # Lista para armazenar todos os inimigos
