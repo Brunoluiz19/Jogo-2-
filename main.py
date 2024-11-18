@@ -3,11 +3,15 @@ import pygame
 from grid import Grid
 import random
 from collections import deque
+import sys  # Import necessário para sys.exit()
 
 pygame.init()
 clock = pygame.time.Clock()
 
-# Layout do labirinto: 1 representa uma parede e 0 representa um caminho
+# Carregar música de fundo
+pygame.mixer.music.load('background_music.mp3')
+
+# labirinto 2
 maze = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -32,6 +36,34 @@ maze = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
+# Layout do labirinto: 1 representa uma parede e 0 representa um caminho
+maze2 = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Linha 0
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 1
+    [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],  # Linha 2
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 3
+    [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],  # Linha 4
+    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],  # Linha 5
+    [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1],  # Linha 6
+    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 7
+    [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],  # Linha 8
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 9
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],  # Linha 10
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 11
+    [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1],  # Linha 12
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 13
+    [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],  # Linha 14
+    [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],  # Linha 15
+    [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],  # Linha 16
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 17
+    [1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],  # Linha 18
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Linha 19
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Linha 20
+]
+
+# Lista de labirintos
+maze_list = [maze, maze2]
+current_maze_index = 0  # Índice do labirinto atual
 
 # Atualize a instância grid para usar o layout do labirinto
 num_linhas = len(maze)
@@ -182,7 +214,6 @@ class Bolinhas:
             self.posicoes.remove((linha, coluna))
             score += 10  # Incrementa a pontuação
 
-
 # Cria uma instância das bolinhas
 bolinhas = Bolinhas()
 
@@ -218,7 +249,6 @@ class Enemy:
         self.perseguindo = False  # Indica se o inimigo está perseguindo o jogador
         self.direcao = None  # Direção atual do movimento
 
-
         # Imagens do fantasma
         self.frames = {
             'esquerda': pygame.image.load("sprites/ghost_left.png"),
@@ -226,6 +256,7 @@ class Enemy:
             'cima': pygame.image.load("sprites/ghost_up.png"),
             'baixo': pygame.image.load("sprites/ghost_down.png")
         }
+
     def pode_ver_player(self, player):
         if self.linha == player.linha:  # Mesma linha
             menor_coluna, maior_coluna = sorted([self.coluna, player.coluna])
@@ -240,6 +271,7 @@ class Enemy:
                     return False
             return True
         return False
+
     def calcula_rota(self, destino_linha, destino_coluna):
         inicio = (self.linha, self.coluna)
         destino = (destino_linha, destino_coluna)
@@ -311,8 +343,6 @@ class Enemy:
             frame = self.frames['direita']  # Direção padrão: direita
         screen.blit(pygame.transform.scale(frame, (self.tamanho_celula, self.tamanho_celula)), (x, y))
 
-
-
 # Lista para armazenar todos os inimigos
 enemies = []
 
@@ -331,49 +361,147 @@ for i in range(4):  # Criar 4 inimigos
     enemy.tempo_espera = tempos_espera[i]  # Configurar o tempo de espera inicial
     enemies.append(enemy)
 
-    if player.vidas == 0:
-        window.fill((0, 0, 0))
-        game_over_text = title_font.render("Game Over!", True, Cores.vermelho)
-        window.blit(game_over_text, game_over_text.get_rect(center=(largura_janela // 2, altura_janela // 2)))
-        pygame.display.update()
-        pygame.time.wait(3000)
+def reset_game(novo_labirinto):
+    global maze, bolinhas, player, enemies, num_linhas, num_colunas, grid, window, largura_janela, altura_janela
+    maze = novo_labirinto
 
-while game:
-    clock.tick(5)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            game = False
-        if show_start_screen and event.type == pygame.KEYDOWN:
-            show_start_screen = False
-        elif not show_start_screen:
-            player.set_direcao(event)
+    # Atualizar o grid com o novo tamanho
+    num_linhas = len(maze)
+    num_colunas = len(maze[0])
+    grid.num_linhas = num_linhas
+    grid.num_colunas = num_colunas
+    grid.tamanho_celula = 30
 
-    if not show_start_screen:
-        window.fill((255, 255, 255))
-        draw_maze(window)  # Desenha o labirinto
-        bolinhas.draw(window)  # Desenha as bolinhas
-        player.move()
-        bolinhas.coletar(player.linha, player.coluna)  # Remove bolinhas quando o jogador passa por elas
-        player.draw(window)  # Desenha o jogador
+    # Atualizar a janela
+    largura_janela = grid.num_colunas * grid.tamanho_celula
+    altura_janela = grid.num_linhas * grid.tamanho_celula
+    window = pygame.display.set_mode((largura_janela, altura_janela))
 
-        # Atualizar e desenhar todos os inimigos
-        for enemy in enemies:
-            if enemy.tempo_espera <= 0:
-                enemy.move(player)  # Move o inimigo
-            else:
-                enemy.tempo_espera -= 1  # Aguarda antes de começar a se mover
-            enemy.draw(window)  # Desenha o inimigo
+    # Reiniciar o jogador no ponto inicial
+    player.linha, player.coluna = 1, 1
+    player.direcao = None
+    player.direcao_desejada = None
 
-    # Verificar se algum inimigo alcançou o jogador
+    # Reiniciar as bolinhas
+    bolinhas = Bolinhas()
+
+    # Reposicionar os inimigos no centro do labirinto
     for enemy in enemies:
-        if enemy.linha == player.linha and enemy.coluna == player.coluna:
-            player.vidas -= 1  # Reduz a vida do jogador
-            if player.vidas == 0:
+        enemy.linha, enemy.coluna = len(maze) // 2, len(maze[0]) // 2
+        enemy.rota = []
+        enemy.tempo_espera = 20  # Tempo de espera padrão
+
+    # Reiniciar a música
+    pygame.mixer.music.stop()
+    pygame.mixer.music.play(-1)
+
+def tela_fim_de_jogo(pontuacao_final):
+    # Parar a música
+    pygame.mixer.music.stop()
+
+    # Limpa a tela
+    window.fill((0, 0, 0))
+
+    # Exibe a mensagem de fim de jogo
+    fonte_titulo = pygame.font.Font(None, 74)
+    texto_titulo = fonte_titulo.render("Fim de Jogo", True, (255, 255, 255))
+    window.blit(texto_titulo, (largura_janela/2 - texto_titulo.get_width()/2, altura_janela/4))
+
+    # Exibe a pontuação final
+    fonte_pontuacao = pygame.font.Font(None, 50)
+    texto_pontuacao = fonte_pontuacao.render(f"Sua Pontuação: {pontuacao_final}", True, (255, 255, 255))
+    window.blit(texto_pontuacao, (largura_janela/2 - texto_pontuacao.get_width()/2, altura_janela/2))
+
+    # Exibe as opções
+    fonte_opcoes = pygame.font.Font(None, 36)
+    texto_tentar_novamente = fonte_opcoes.render("Pressione Enter para tentar novamente", True, (255, 255, 255))
+    window.blit(texto_tentar_novamente, (largura_janela/2 - texto_tentar_novamente.get_width()/2, altura_janela/2 + 60))
+
+    texto_sair = fonte_opcoes.render("Pressione Esc para sair", True, (255, 255, 255))
+    window.blit(texto_sair, (largura_janela/2 - texto_sair.get_width()/2, altura_janela/2 + 100))
+
+    pygame.display.flip()
+
+    # Aguarda a entrada do jogador
+    esperando = True
+    while esperando:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_RETURN:
+                    esperando = False
+                    reiniciar_jogo()
+                elif evento.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+
+def reiniciar_jogo():
+    global score, current_maze_index, player, enemies, bolinhas, game
+    score = 0
+    player.vidas = 3
+    current_maze_index = 0
+    reset_game(maze_list[current_maze_index])
+    game = True
+    main_game_loop()
+
+def main_game_loop():
+    global game, show_start_screen, current_maze_index, maze
+    while game:
+        clock.tick(5)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 game = False
-                break
+            if show_start_screen and event.type == pygame.KEYDOWN:
+                show_start_screen = False
+                # Iniciar a música
+                pygame.mixer.music.play(-1)
+            elif not show_start_screen:
+                player.set_direcao(event)
 
-        draw_score(window)  # Desenha a pontuação
+        if show_start_screen:
+            draw_start_screen()
+        else:
+            window.fill((255, 255, 255))
+            draw_maze(window)  # Desenha o labirinto
+            bolinhas.draw(window)  # Desenha as bolinhas
+            player.move()
+            bolinhas.coletar(player.linha, player.coluna)  # Remove bolinhas quando o jogador passa por elas
+            player.draw(window)  # Desenha o jogador
 
-    pygame.display.update()
+            # Atualizar e desenhar todos os inimigos
+            for enemy in enemies:
+                if enemy.tempo_espera <= 0:
+                    enemy.move(player)  # Move o inimigo
+                else:
+                    enemy.tempo_espera -= 1  # Aguarda antes de começar a se mover
+                enemy.draw(window)  # Desenha o inimigo
+
+            # Verificar se todas as bolinhas foram coletadas
+            if not bolinhas.posicoes:
+                current_maze_index += 1
+                if current_maze_index < len(maze_list):
+                    reset_game(maze_list[current_maze_index])  # Troca para o próximo labirinto
+                else:
+                    tela_fim_de_jogo(score)
+                    game = False
+                    break
+
+            # Verificar se algum inimigo alcançou o jogador
+            for enemy in enemies:
+                if enemy.linha == player.linha and enemy.coluna == player.coluna:
+                    player.vidas -= 1  # Reduz a vida do jogador
+                    if player.vidas == 0:
+                        tela_fim_de_jogo(score)
+                        game = False
+                        break
+
+            draw_score(window)  # Desenha a pontuação
+            draw_vidas(window, player.vidas)  # Desenha as vidas
+            pygame.display.update()
+
+# Inicia o loop principal do jogo
+main_game_loop()
 
 pygame.quit()
